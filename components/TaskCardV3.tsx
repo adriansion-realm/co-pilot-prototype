@@ -494,6 +494,7 @@ export default function TaskCardV3({ task, columnName, taskCount, showCompleted 
           lastMeeting: 'Oct 2, 2025',
           hasCall: task.hasCall,
         }}
+        defaultTab="projectInfo"
       />
     </TooltipProvider>
   );
