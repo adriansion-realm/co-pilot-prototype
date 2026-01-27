@@ -50,7 +50,7 @@ interface ProjectDrawerProps {
 
 export default function ProjectDrawer({ open, onOpenChange, columnName, taskCount, project }: ProjectDrawerProps) {
   const [showCompleted, setShowCompleted] = useState(true);
-  const [activeTab, setActiveTab] = useState<'tasks' | 'status' | 'risks'>('tasks');
+  const [activeTab, setActiveTab] = useState<'projectInfo' | 'tasks' | 'status' | 'risks'>('tasks');
   const [statusSummary, setStatusSummary] = useState(
     `• Nedu and Kishaya completed a detailed project planning call on January 14, 2026, clarifying scope, priorities, and budget constraints; the main blocker is aligning the project scope with Nedu's $100K target budget, as initial estimates were significantly higher.
 
@@ -72,6 +72,8 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
     reasoning: ''
   });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   const toggleRisk = (riskId: string) => {
     setExpandedRisks(prev => {
@@ -119,75 +121,79 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
     adjustTextareaHeight();
   }, []);
 
-  // Different task sets with varying complexity
+  useEffect(() => {
+    // Update indicator position when active tab changes or drawer opens
+    if (open) {
+      // Use setTimeout to ensure DOM is rendered
+      setTimeout(() => {
+        const activeTabElement = tabRefs.current[activeTab];
+        if (activeTabElement) {
+          const { offsetLeft, offsetWidth } = activeTabElement;
+          setIndicatorStyle({ left: offsetLeft, width: offsetWidth });
+        }
+      }, 0);
+    }
+  }, [activeTab, open]);
+
+  // Different task sets based on column type
   const taskSets = {
-    few: [
-      { id: 1, title: 'Send recap email for [1/22] call', completed: true, date: 'Jan 22' },
-      { id: 2, title: 'Call homeowner to review bid and plans', completed: false, date: 'Jan 10' },
-      { id: 3, title: 'Match and approve qualified vendors', completed: false, date: 'Today' },
-      { id: 4, title: 'Follow up to schedule contractor site visits after closing', completed: false, date: 'Feb 12' },
+    overdue: [
+      { id: 1, title: 'Send recap email for [1/22] call', completed: true, date: '5 days ago' },
+      { id: 2, title: 'Call homeowner to review bid and plans', completed: false, date: '17 days ago' },
+      { id: 3, title: 'Provide clear bid comparison and contractor recommendation', completed: false, date: '12 days ago' },
+      { id: 4, title: 'Match and approve qualified vendors', completed: false, date: 'Today' },
+      { id: 5, title: 'Follow up to schedule contractor site visits after closing', completed: false, date: 'in 16 days' },
     ],
-    medium: [
-      { id: 1, title: 'Follow up with Gary on site visits and first bid', completed: true, date: 'Jan 25' },
-      { id: 2, title: 'Clarify project ownership and update internal records', completed: true, date: 'Jan 28' },
-      { id: 3, title: 'Provide clear bid comparison and contractor recommendation to Olga', completed: false, date: 'Jan 15' },
-      { id: 4, title: 'Review and finalize project scope with stakeholders', completed: false, date: 'Today' },
-      { id: 5, title: 'Reschedule meeting with Olga to review bids and next steps', completed: false, date: 'Feb 2' },
-      { id: 6, title: 'Confirm outcome with Gary/Kerry regarding project award', completed: false, date: 'Feb 5' },
-      { id: 7, title: 'Schedule kick-off meeting with selected contractor', completed: false, date: 'Feb 15' },
+    today: [
+      { id: 1, title: 'Follow up with Gary on site visits and first bid', completed: true, date: '2 days ago' },
+      { id: 2, title: 'Clarify project ownership and update internal records', completed: true, date: 'Yesterday' },
+      { id: 3, title: 'Review and finalize project scope with stakeholders', completed: false, date: 'Today' },
+      { id: 4, title: 'Match and approve qualified vendors', completed: false, date: 'Today' },
+      { id: 5, title: 'Reschedule meeting with client to review bids and next steps', completed: false, date: 'in 6 days' },
+      { id: 6, title: 'Schedule kick-off meeting with selected contractor', completed: false, date: 'in 19 days' },
     ],
-    many: [
-      { id: 1, title: 'Send recap email for [1/22] call', completed: true, date: 'Jan 22' },
-      { id: 2, title: 'Follow up with Gary on site visits and first bid', completed: true, date: 'Jan 25' },
-      { id: 3, title: 'Clarify project ownership and update internal records', completed: true, date: 'Jan 28' },
-      { id: 4, title: 'Review contractor proposals and timeline', completed: true, date: 'Jan 29' },
-      { id: 5, title: 'Call homeowner to review bid and plans', completed: false, date: 'Jan 10' },
-      { id: 6, title: 'Provide clear bid comparison and contractor recommendation to Olga', completed: false, date: 'Jan 15' },
-      { id: 7, title: 'Match and approve qualified vendors', completed: false, date: 'Today' },
-      { id: 8, title: 'Review and finalize project scope with stakeholders', completed: false, date: 'Today' },
-      { id: 9, title: 'Reschedule meeting with Olga to review bids and next steps', completed: false, date: 'Feb 2' },
-      { id: 10, title: 'Confirm outcome with Gary/Kerry regarding project award', completed: false, date: 'Feb 5' },
-      { id: 11, title: 'Follow up with Gary after his reply about reviewing bids', completed: false, date: 'Feb 8' },
-      { id: 12, title: 'Follow up to schedule contractor site visits after closing', completed: false, date: 'Feb 12' },
-      { id: 13, title: 'Schedule kick-off meeting with selected contractor', completed: false, date: 'Feb 15' },
-      { id: 14, title: 'Prepare project documentation for internal review', completed: false, date: 'Feb 18' },
+    later: [
+      { id: 1, title: 'Send recap email for last call', completed: true, date: '5 days ago' },
+      { id: 2, title: 'Review contractor proposals and timeline', completed: true, date: 'Yesterday' },
+      { id: 3, title: 'Reschedule meeting with client to review bids and next steps', completed: false, date: 'in 6 days' },
+      { id: 4, title: 'Confirm outcome with client regarding project award', completed: false, date: 'in 9 days' },
+      { id: 5, title: 'Follow up after client reply about reviewing bids', completed: false, date: 'in 12 days' },
+      { id: 6, title: 'Follow up to schedule contractor site visits', completed: false, date: 'in 16 days' },
+      { id: 7, title: 'Schedule kick-off meeting with selected contractor', completed: false, date: 'in 19 days' },
+    ],
+    noTasks: [
+      { id: 1, title: 'Send recap email for [1/22] call', completed: true, date: '5 days ago' },
+      { id: 2, title: 'Follow up with Gary on site visits and first bid', completed: true, date: '2 days ago' },
+      { id: 3, title: 'Clarify project ownership and update internal records', completed: true, date: 'Yesterday' },
+      { id: 4, title: 'Review contractor proposals and timeline', completed: true, date: 'Yesterday' },
     ],
   };
 
-  // Use project title to determine which task set to show
+  // Use column name to determine which task set to show
   const getTaskSet = () => {
-    const hash = project.title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const options = ['few', 'medium', 'many'] as const;
-    return taskSets[options[hash % 3]];
+    if (columnName === 'Overdue') return taskSets.overdue;
+    if (columnName === 'Today') return taskSets.today;
+    if (columnName === 'Later') return taskSets.later;
+    return taskSets.noTasks;
   };
 
   const allTasksForProject = getTaskSet();
   const tasks = showCompleted ? allTasksForProject : allTasksForProject.filter(task => !task.completed);
 
   const getTaskCount = () => {
-    if (columnName === 'Overdue') {
-      // Count tasks that are not completed and have past dates (Jan dates)
-      return tasks.filter(task => !task.completed && task.date.startsWith('Jan')).length;
-    }
-    if (columnName === 'Today') {
-      return tasks.filter(task => task.date === 'Today').length;
-    }
-    if (columnName === 'Later') {
-      // Count tasks that are not completed and have future dates (Feb dates)
-      return tasks.filter(task => !task.completed && task.date.startsWith('Feb')).length;
-    }
-    return 0;
+    // Always count overdue tasks (tasks with dates containing "ago" and not completed)
+    return tasks.filter(task => !task.completed && task.date.includes('ago')).length;
   };
 
   const getBadgeText = () => {
-    if (columnName === 'No tasks') return '0 Tasks';
     const count = getTaskCount();
-    return `${count} ${columnName}`;
+    return `${count} overdue`;
   };
 
   const getBadgeStyles = () => {
-    if (columnName === 'Overdue') return 'bg-[#fef2f2] border border-[#dc2626] text-[#7f1d1d]';
-    if (columnName === 'Today') return 'bg-[#f3f7ec] border border-[#76924f] text-[#3a4a2b]';
+    // Badge is always red if there are overdue tasks
+    const overdueCount = getTaskCount();
+    if (overdueCount > 0) return 'bg-[#fef2f2] border border-[#dc2626] text-[#7f1d1d]';
     return 'bg-[#f5f5f5] border border-[#e5e5e5] text-[#737373]';
   };
 
@@ -201,7 +207,7 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
               <PanelRightClose className="w-4 h-4" />
             </Button>
             <div className="w-px h-4 bg-[#e5e5e5]" />
-            <p className="text-sm font-medium text-[#0a0a0a]">Project info</p>
+            <p className="text-sm font-medium text-[#0a0a0a]">{project.title}</p>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-[#737373]" />
@@ -212,166 +218,191 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
         {/* Content */}
         <div className="px-6 pt-6 overflow-y-auto h-[calc(100vh-56px)]">
           <div className="space-y-6 pb-12">
-            {/* Project Details */}
-            <div className="space-y-2">
-              {/* Opportunity */}
-              <div className="flex items-center gap-4 h-9">
-                <div className="flex items-center gap-2 w-40">
-                  <Building2 className="w-4 h-4 text-[#737373]" />
-                  <span className="text-sm text-[#737373]">Opportunity</span>
-                </div>
-                <div className="flex items-center flex-1 gap-3 px-3 py-1">
-                  <span className="text-sm font-medium text-[#0a0a0a]">{project.title}</span>
-                  <div className="flex items-center gap-2 ml-auto">
-                    <Button variant="outline" size="icon" className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5]">
-                      <img src="/assets/Status/salesloft.png" alt="Salesloft" className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5]">
-                      <img src="/assets/Status/salesforce.png" alt="Salesforce" className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5]">
-                      <img src="/assets/Status/admin.png" alt="Admin" className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* KOC Deck */}
-              <div className="flex items-center gap-4 h-9">
-                <div className="flex items-center gap-2 w-40">
-                  <Layers className="w-4 h-4 text-[#737373]" />
-                  <span className="text-sm text-[#737373]">KOC Deck</span>
-                </div>
-                <div className="flex items-center flex-1 gap-1 px-3 py-1">
-                  <span className="text-sm font-medium text-[#0a0a0a]">{project.status}</span>
-                  <ExternalLink className="w-4 h-4 text-[#0a0a0a]" />
-                </div>
-              </div>
-
-              {/* Health */}
-              <div className="flex items-center gap-4 h-9">
-                <div className="flex items-center gap-2 w-40">
-                  <Heart className="w-4 h-4 text-[#737373]" />
-                  <span className="text-sm text-[#737373]">Health</span>
-                </div>
-                <div className="flex items-center flex-1 px-3 py-1">
-                  <div className="bg-[#fff7e5] border border-[#d96302] px-1.5 rounded-lg h-5 flex items-center justify-center">
-                    <span className="text-xs font-semibold text-[#73290c]">{project.health}/100</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Estimated close */}
-              <div className="flex items-center gap-4 h-9">
-                <div className="flex items-center gap-2 w-40">
-                  <Calendar className="w-4 h-4 text-[#737373]" />
-                  <span className="text-sm text-[#737373]">Estimated close</span>
-                </div>
-                <div className="flex items-center flex-1 px-3 py-1">
-                  <span className="text-sm font-medium text-[#0a0a0a]">{project.estimatedClose}</span>
-                </div>
-              </div>
-
-              {/* Contract value */}
-              <div className="flex items-center gap-4 h-9">
-                <div className="flex items-center gap-2 w-40">
-                  <DollarSign className="w-4 h-4 text-[#737373]" />
-                  <span className="text-sm text-[#737373]">Contract value</span>
-                </div>
-                <div className="flex items-center flex-1 px-3 py-1">
-                  <span className="text-sm font-medium text-[#0a0a0a]">{project.contractValue}</span>
-                </div>
-              </div>
-
-              {/* Last meeting */}
-              <div className="flex items-center gap-4 h-9">
-                <div className="flex items-center gap-2 w-40">
-                  <Clock className="w-4 h-4 text-[#737373]" />
-                  <span className="text-sm text-[#737373]">Last meeting</span>
-                </div>
-                <div className="flex items-center flex-1 px-3 py-1">
-                  <span className="text-sm font-medium text-[#0a0a0a]">{project.lastMeeting}</span>
-                </div>
-              </div>
-
-              {/* Next call */}
-              <div className="flex items-center gap-4 h-9">
-                <div className="flex items-center gap-2 w-40">
-                  {project.hasCall ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <g clipPath="url(#clip0_1062_12854)">
-                        <path d="M11.2433 12.5791L10.89 14.4024C10.8578 14.5718 10.7907 14.7326 10.6928 14.8746C10.595 15.0165 10.4685 15.1365 10.3216 15.2267C10.1747 15.317 10.0106 15.3756 9.83975 15.3987C9.6689 15.4219 9.49509 15.4091 9.32946 15.3612C7.49863 14.7955 5.82599 13.8084 4.44596 12.4789C3.15831 11.2612 2.15456 9.77493 1.50599 8.12562C0.786099 6.34102 0.496705 4.41194 0.661255 2.49466C0.678636 2.32365 0.731435 2.15813 0.81629 2.00864C0.901146 1.85915 1.0162 1.72897 1.15412 1.62638C1.29205 1.52379 1.44982 1.45105 1.6174 1.41278C1.78498 1.37451 1.95869 1.37155 2.12747 1.40409L3.95079 1.75742C4.24631 1.81168 4.51202 1.97154 4.69839 2.20721C4.88476 2.44288 4.97907 2.73828 4.96376 3.03834C4.92764 3.63676 4.95934 4.23734 5.05825 4.82863C5.09786 5.06201 5.06975 5.30186 4.97723 5.51975C4.88471 5.73764 4.73167 5.92444 4.53624 6.05803L3.61479 6.68032C4.18513 8.36957 5.20084 9.87356 6.55477 11.0336L7.47621 10.4113C7.67313 10.2799 7.90357 10.2077 8.14025 10.2033C8.37693 10.1989 8.60992 10.2624 8.81161 10.3863C9.32315 10.6989 9.86842 10.9527 10.437 11.1427C10.7242 11.2416 10.965 11.4425 11.1136 11.7074C11.2623 11.9722 11.3084 12.2824 11.2433 12.5791Z" stroke="#737373" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M12.0754 10.8439C14.5149 9.18156 15.1449 5.85642 13.4826 3.41694C11.8203 0.977473 8.49514 0.347458 6.05566 2.00977" stroke="#737373" strokeWidth="1.28436" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M8.94531 4.12158V7.0114H10.8719" stroke="#737373" strokeWidth="1.28436" strokeLinecap="round" strokeLinejoin="round"/>
-                      </g>
-                      <defs>
-                        <clipPath id="clip0_1062_12854">
-                          <rect width="16" height="16" fill="white"/>
-                        </clipPath>
-                      </defs>
-                    </svg>
-                  ) : (
-                    <PhoneOff className="w-4 h-4 text-[#737373]" />
-                  )}
-                  <span className="text-sm text-[#737373]">Next call</span>
-                </div>
-                <div className="flex items-center flex-1 px-3 py-1">
-                  {project.hasCall ? (
-                    <span className="text-sm font-medium text-[#0a0a0a]">Scheduled</span>
-                  ) : (
-                    <div className="bg-[#fef2f2] border border-[#dc2626] px-1.5 rounded-lg h-5 flex items-center justify-center">
-                      <span className="text-xs font-semibold text-[#7f1d1d]">Not scheduled</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Separator */}
-            <div className="h-px bg-[#e5e5e5]" />
-
             {/* Tabs */}
-            <div className="bg-[#fcfaf8] p-1 rounded-2xl flex items-center gap-0">
-              <button
-                onClick={() => setActiveTab('tasks')}
-                className={`flex items-center justify-center gap-2 px-2 py-1 flex-1 h-8 ${activeTab === 'tasks' ? 'bg-white rounded-xl shadow-sm' : ''}`}
-              >
-                <ListChecks className="w-4 h-4" />
-                <span className="text-sm font-medium">3 Tasks</span>
-                <div className={`px-1.5 rounded-lg h-5 flex items-center justify-center ${getBadgeStyles()}`}>
-                  <span className="text-xs font-semibold">{getBadgeText()}</span>
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('status')}
-                className={`flex items-center justify-center gap-2 px-2 py-1 flex-1 h-8 ${activeTab === 'status' ? 'bg-white rounded-xl shadow-sm' : ''}`}
-              >
-                <Loader className="w-4 h-4" />
-                <span className="text-sm font-medium">Status</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('risks')}
-                className={`flex items-center justify-center gap-2 px-2 py-1 flex-1 h-8 ${activeTab === 'risks' ? 'bg-white rounded-xl shadow-sm' : ''}`}
-              >
-                <CircleAlert className="w-4 h-4" />
-                <span className="text-sm font-medium">Risks</span>
-              </button>
+            <div className="relative border-b border-[#e5e5e5]">
+              <div className="flex items-center gap-6">
+                <button
+                  ref={(el) => (tabRefs.current['projectInfo'] = el)}
+                  onClick={() => setActiveTab('projectInfo')}
+                  className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'projectInfo' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
+                >
+                  <Building2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Project info</span>
+                </button>
+                <button
+                  ref={(el) => (tabRefs.current['tasks'] = el)}
+                  onClick={() => setActiveTab('tasks')}
+                  className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'tasks' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
+                >
+                  <ListChecks className="w-4 h-4" />
+                  <span className="text-sm font-medium">{tasks.length} Tasks</span>
+                  <div className={`px-1.5 rounded-lg h-5 flex items-center justify-center ${getBadgeStyles()}`}>
+                    <span className="text-xs font-semibold">{getBadgeText()}</span>
+                  </div>
+                </button>
+                <button
+                  ref={(el) => (tabRefs.current['status'] = el)}
+                  onClick={() => setActiveTab('status')}
+                  className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'status' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
+                >
+                  <Loader className="w-4 h-4" />
+                  <span className="text-sm font-medium">Status</span>
+                </button>
+                <button
+                  ref={(el) => (tabRefs.current['risks'] = el)}
+                  onClick={() => setActiveTab('risks')}
+                  className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'risks' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
+                >
+                  <CircleAlert className="w-4 h-4" />
+                  <span className="text-sm font-medium">Risks</span>
+                </button>
+              </div>
+              {/* Animated indicator */}
+              <div
+                className="absolute bottom-0 h-[2px] bg-[#0a0a0a] transition-all duration-300 ease-out"
+                style={{
+                  left: `${indicatorStyle.left}px`,
+                  width: `${indicatorStyle.width}px`
+                }}
+              />
             </div>
 
             {/* Tab Content */}
+            {activeTab === 'projectInfo' && (
+              <div className="space-y-1">
+                {/* Opportunity */}
+                <div className="flex items-center gap-4 h-9">
+                  <div className="flex items-center gap-2 w-40">
+                    <Building2 className="w-4 h-4 text-[#737373]" />
+                    <span className="text-sm text-[#737373]">Opportunity</span>
+                  </div>
+                  <div className="flex items-center flex-1 gap-3 px-3 py-1">
+                    <span className="text-sm font-medium text-[#0a0a0a]">{project.title}</span>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <Button variant="outline" size="icon" className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5]">
+                        <img src="/assets/Status/salesloft.png" alt="Salesloft" className="w-4 h-4" />
+                      </Button>
+                      <Button variant="outline" size="icon" className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5]">
+                        <img src="/assets/Status/salesforce.png" alt="Salesforce" className="w-4 h-4" />
+                      </Button>
+                      <Button variant="outline" size="icon" className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5]">
+                        <img src="/assets/Status/admin.png" alt="Admin" className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* KOC Deck */}
+                <div className="flex items-center gap-4 h-9">
+                  <div className="flex items-center gap-2 w-40">
+                    <Layers className="w-4 h-4 text-[#737373]" />
+                    <span className="text-sm text-[#737373]">KOC Deck</span>
+                  </div>
+                  <div className="flex items-center flex-1 gap-1 px-3 py-1">
+                    <span className="text-sm font-medium text-[#0a0a0a]">{project.status}</span>
+                    <ExternalLink className="w-4 h-4 text-[#0a0a0a]" />
+                  </div>
+                </div>
+
+                {/* Health */}
+                <div className="flex items-center gap-4 h-9">
+                  <div className="flex items-center gap-2 w-40">
+                    <Heart className="w-4 h-4 text-[#737373]" />
+                    <span className="text-sm text-[#737373]">Health</span>
+                  </div>
+                  <div className="flex items-center flex-1 px-3 py-1">
+                    <div className="bg-[#fff7e5] border border-[#d96302] px-1.5 rounded-lg h-5 flex items-center justify-center">
+                      <span className="text-xs font-semibold text-[#73290c]">{project.health}/100</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Estimated close */}
+                <div className="flex items-center gap-4 h-9">
+                  <div className="flex items-center gap-2 w-40">
+                    <Calendar className="w-4 h-4 text-[#737373]" />
+                    <span className="text-sm text-[#737373]">Estimated close</span>
+                  </div>
+                  <div className="flex items-center flex-1 px-3 py-1">
+                    <span className="text-sm font-medium text-[#0a0a0a]">{project.estimatedClose}</span>
+                  </div>
+                </div>
+
+                {/* Contract value */}
+                <div className="flex items-center gap-4 h-9">
+                  <div className="flex items-center gap-2 w-40">
+                    <DollarSign className="w-4 h-4 text-[#737373]" />
+                    <span className="text-sm text-[#737373]">Contract value</span>
+                  </div>
+                  <div className="flex items-center flex-1 px-3 py-1">
+                    <span className="text-sm font-medium text-[#0a0a0a]">{project.contractValue}</span>
+                  </div>
+                </div>
+
+                {/* Last meeting */}
+                <div className="flex items-center gap-4 h-9">
+                  <div className="flex items-center gap-2 w-40">
+                    <Clock className="w-4 h-4 text-[#737373]" />
+                    <span className="text-sm text-[#737373]">Last meeting</span>
+                  </div>
+                  <div className="flex items-center flex-1 px-3 py-1">
+                    <span className="text-sm font-medium text-[#0a0a0a]">{project.lastMeeting}</span>
+                  </div>
+                </div>
+
+                {/* Next call */}
+                <div className="flex items-center gap-4 h-9">
+                  <div className="flex items-center gap-2 w-40">
+                    {project.hasCall ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <g clipPath="url(#clip0_1062_12854)">
+                          <path d="M11.2433 12.5791L10.89 14.4024C10.8578 14.5718 10.7907 14.7326 10.6928 14.8746C10.595 15.0165 10.4685 15.1365 10.3216 15.2267C10.1747 15.317 10.0106 15.3756 9.83975 15.3987C9.6689 15.4219 9.49509 15.4091 9.32946 15.3612C7.49863 14.7955 5.82599 13.8084 4.44596 12.4789C3.15831 11.2612 2.15456 9.77493 1.50599 8.12562C0.786099 6.34102 0.496705 4.41194 0.661255 2.49466C0.678636 2.32365 0.731435 2.15813 0.81629 2.00864C0.901146 1.85915 1.0162 1.72897 1.15412 1.62638C1.29205 1.52379 1.44982 1.45105 1.6174 1.41278C1.78498 1.37451 1.95869 1.37155 2.12747 1.40409L3.95079 1.75742C4.24631 1.81168 4.51202 1.97154 4.69839 2.20721C4.88476 2.44288 4.97907 2.73828 4.96376 3.03834C4.92764 3.63676 4.95934 4.23734 5.05825 4.82863C5.09786 5.06201 5.06975 5.30186 4.97723 5.51975C4.88471 5.73764 4.73167 5.92444 4.53624 6.05803L3.61479 6.68032C4.18513 8.36957 5.20084 9.87356 6.55477 11.0336L7.47621 10.4113C7.67313 10.2799 7.90357 10.2077 8.14025 10.2033C8.37693 10.1989 8.60992 10.2624 8.81161 10.3863C9.32315 10.6989 9.86842 10.9527 10.437 11.1427C10.7242 11.2416 10.965 11.4425 11.1136 11.7074C11.2623 11.9722 11.3084 12.2824 11.2433 12.5791Z" stroke="#737373" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12.0754 10.8439C14.5149 9.18156 15.1449 5.85642 13.4826 3.41694C11.8203 0.977473 8.49514 0.347458 6.05566 2.00977" stroke="#737373" strokeWidth="1.28436" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M8.94531 4.12158V7.0114H10.8719" stroke="#737373" strokeWidth="1.28436" strokeLinecap="round" strokeLinejoin="round"/>
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_1062_12854">
+                            <rect width="16" height="16" fill="white"/>
+                          </clipPath>
+                        </defs>
+                      </svg>
+                    ) : (
+                      <PhoneOff className="w-4 h-4 text-[#737373]" />
+                    )}
+                    <span className="text-sm text-[#737373]">Next call</span>
+                  </div>
+                  <div className="flex items-center flex-1 px-3 py-1">
+                    {project.hasCall ? (
+                      <span className="text-sm font-medium text-[#0a0a0a]">Scheduled</span>
+                    ) : (
+                      <div className="bg-[#fef2f2] border border-[#dc2626] px-1.5 rounded-lg h-5 flex items-center justify-center">
+                        <span className="text-xs font-semibold text-[#7f1d1d]">Not scheduled</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'tasks' && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-[#737373]">Tasks</span>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="show-completed"
-                      checked={showCompleted}
-                      onCheckedChange={(checked) => setShowCompleted(checked as boolean)}
-                    />
-                    <label htmlFor="show-completed" className="text-sm font-medium cursor-pointer">
-                      Show completed
-                    </label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="show-completed"
+                        checked={showCompleted}
+                        onCheckedChange={(checked) => setShowCompleted(checked as boolean)}
+                      />
+                      <label htmlFor="show-completed" className="text-sm font-medium cursor-pointer">
+                        Show completed
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-3 px-3 py-1.5 border border-[#e5e5e5] rounded-xl h-9 bg-white cursor-pointer hover:bg-[#fcfaf8]">
+                      <span className="text-sm">last 7 days</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
                   </div>
                 </div>
 
@@ -381,19 +412,19 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                     <div
                       key={task.id}
                       onClick={() => openTaskDetailModal(task)}
-                      className="flex items-center gap-3 p-4 rounded-xl border border-[#e5e5e5] shadow-sm bg-white hover:bg-[#f8f4f0] transition-colors cursor-pointer"
+                      className="flex items-center gap-3 p-4 rounded-xl border border-[#e5e5e5] hover:bg-[#fcfaf8] transition-colors cursor-pointer"
                     >
                       {task.completed ? (
-                        <div className="w-4 h-4 bg-[#76924f] rounded-full flex items-center justify-center">
+                        <div className="w-4 h-4 bg-[#76924f] rounded-full flex items-center justify-center flex-shrink-0">
                           <Check className="w-3 h-3 text-white" />
                         </div>
                       ) : (
-                        <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full shadow-sm" />
+                        <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full flex-shrink-0" />
                       )}
-                      <span className="flex-1 text-sm font-medium text-[#0a0a0a]">{task.title}</span>
-                      <div className="flex items-center gap-1">
+                      <span className="flex-1 text-sm font-medium text-[#0a0a0a] truncate">{task.title}</span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <Calendar className="w-4 h-4 text-[#737373]" />
-                        <span className="text-[13px] text-[#737373] w-11">{task.date}</span>
+                        <span className="text-[13px] text-[#737373] whitespace-nowrap">{task.date}</span>
                       </div>
                     </div>
                   ))}
@@ -401,7 +432,7 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                   {/* Add task */}
                   <button
                     onClick={() => openAddTaskModal()}
-                    className="flex items-center gap-3 p-4 rounded-xl border border-[#e5e5e5] bg-white shadow-sm cursor-pointer hover:bg-[#fcfaf8] w-full text-left"
+                    className="flex items-center gap-3 p-4 rounded-xl border border-[#e5e5e5] cursor-pointer hover:bg-[#fcfaf8] w-full text-left"
                   >
                     <Plus className="w-4 h-4 text-[#737373]" />
                     <span className="flex-1 text-sm font-medium text-[#737373]">Add task</span>
@@ -572,34 +603,34 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                       {/* Tasks */}
                       <div className="space-y-2">
                         <div
-                          onClick={() => openTaskDetailModal({ id: 1, title: 'Match and approve qualified vendors', completed: true, date: 'Mar 15' })}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] shadow-sm bg-white hover:bg-[#f8f4f0] transition-colors cursor-pointer"
+                          onClick={() => openTaskDetailModal({ id: 1, title: 'Match and approve qualified vendors', completed: true, date: '3 days ago' })}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] hover:bg-[#fcfaf8] transition-colors cursor-pointer"
                         >
                           <div className="w-4 h-4 bg-[#76924f] rounded-full flex items-center justify-center flex-shrink-0">
                             <Check className="w-3 h-3 text-white" />
                           </div>
-                          <span className="flex-1 text-sm font-medium text-[#0a0a0a]">Match and approve qualified vendors</span>
-                          <div className="flex items-center gap-1">
+                          <span className="flex-1 text-sm font-medium text-[#0a0a0a] truncate">Match and approve qualified vendors</span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <Calendar className="w-4 h-4 text-[#737373]" />
-                            <span className="text-[13px] text-[#737373]">Mar 15</span>
+                            <span className="text-[13px] text-[#737373] whitespace-nowrap">3 days ago</span>
                           </div>
                         </div>
 
                         <div
-                          onClick={() => openTaskDetailModal({ id: 2, title: 'Match and approve qualified vendors', completed: false, date: 'Mar 15' })}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] shadow-sm bg-white hover:bg-[#f8f4f0] transition-colors cursor-pointer"
+                          onClick={() => openTaskDetailModal({ id: 2, title: 'Match and approve qualified vendors', completed: false, date: 'Tomorrow' })}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] hover:bg-[#fcfaf8] transition-colors cursor-pointer"
                         >
-                          <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full shadow-sm flex-shrink-0" />
-                          <span className="flex-1 text-sm font-medium text-[#0a0a0a]">Match and approve qualified vendors</span>
-                          <div className="flex items-center gap-1">
+                          <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full flex-shrink-0" />
+                          <span className="flex-1 text-sm font-medium text-[#0a0a0a] truncate">Match and approve qualified vendors</span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <Calendar className="w-4 h-4 text-[#737373]" />
-                            <span className="text-[13px] text-[#737373]">Mar 15</span>
+                            <span className="text-[13px] text-[#737373] whitespace-nowrap">Tomorrow</span>
                           </div>
                         </div>
 
                         <button
                           onClick={() => openAddTaskModal('Stage')}
-                          className="flex items-center gap-2 p-3 rounded-xl border border-[#e5e5e5] bg-white shadow-sm w-full hover:bg-[#fcfaf8] text-left"
+                          className="flex items-center gap-2 p-3 rounded-xl border border-[#e5e5e5] w-full hover:bg-[#fcfaf8] text-left"
                         >
                           <Plus className="w-4 h-4 text-[#737373]" />
                           <span className="text-sm font-medium text-[#737373]">New Risk task</span>
@@ -785,32 +816,32 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                       {/* Tasks */}
                       <div className="space-y-2">
                         <div
-                          onClick={() => openTaskDetailModal({ id: 3, title: 'Schedule follow-up call to discuss timeline', completed: false, date: 'Feb 1' })}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] shadow-sm bg-white hover:bg-[#f8f4f0] transition-colors cursor-pointer"
+                          onClick={() => openTaskDetailModal({ id: 3, title: 'Schedule follow-up call to discuss timeline', completed: false, date: 'in 5 days' })}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] hover:bg-[#fcfaf8] transition-colors cursor-pointer"
                         >
-                          <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full shadow-sm flex-shrink-0" />
-                          <span className="flex-1 text-sm font-medium text-[#0a0a0a]">Schedule follow-up call to discuss timeline</span>
-                          <div className="flex items-center gap-1">
+                          <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full flex-shrink-0" />
+                          <span className="flex-1 text-sm font-medium text-[#0a0a0a] truncate">Schedule follow-up call to discuss timeline</span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <Calendar className="w-4 h-4 text-[#737373]" />
-                            <span className="text-[13px] text-[#737373]">Feb 1</span>
+                            <span className="text-[13px] text-[#737373] whitespace-nowrap">in 5 days</span>
                           </div>
                         </div>
 
                         <div
-                          onClick={() => openTaskDetailModal({ id: 4, title: 'Send project update and next steps', completed: false, date: 'Feb 3' })}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] shadow-sm bg-white hover:bg-[#f8f4f0] transition-colors cursor-pointer"
+                          onClick={() => openTaskDetailModal({ id: 4, title: 'Send project update and next steps', completed: false, date: 'in 7 days' })}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] hover:bg-[#fcfaf8] transition-colors cursor-pointer"
                         >
-                          <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full shadow-sm flex-shrink-0" />
-                          <span className="flex-1 text-sm font-medium text-[#0a0a0a]">Send project update and next steps</span>
-                          <div className="flex items-center gap-1">
+                          <div className="w-4 h-4 bg-white border border-[#e5e5e5] rounded-full flex-shrink-0" />
+                          <span className="flex-1 text-sm font-medium text-[#0a0a0a] truncate">Send project update and next steps</span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <Calendar className="w-4 h-4 text-[#737373]" />
-                            <span className="text-[13px] text-[#737373]">Feb 3</span>
+                            <span className="text-[13px] text-[#737373] whitespace-nowrap">in 7 days</span>
                           </div>
                         </div>
 
                         <button
                           onClick={() => openAddTaskModal('Homeowner engagement')}
-                          className="flex items-center gap-2 p-3 rounded-xl border border-[#e5e5e5] bg-white shadow-sm w-full hover:bg-[#fcfaf8] text-left"
+                          className="flex items-center gap-2 p-3 rounded-xl border border-[#e5e5e5] w-full hover:bg-[#fcfaf8] text-left"
                         >
                           <Plus className="w-4 h-4 text-[#737373]" />
                           <span className="text-sm font-medium text-[#737373]">New Risk task</span>
@@ -852,36 +883,36 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                       {/* Tasks */}
                       <div className="space-y-2">
                         <div
-                          onClick={() => openTaskDetailModal({ id: 5, title: 'Share client testimonials and case studies', completed: true, date: 'Jan 20' })}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] shadow-sm bg-white hover:bg-[#f8f4f0] transition-colors cursor-pointer"
+                          onClick={() => openTaskDetailModal({ id: 5, title: 'Share client testimonials and case studies', completed: true, date: '7 days ago' })}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] hover:bg-[#fcfaf8] transition-colors cursor-pointer"
                         >
                           <div className="w-4 h-4 bg-[#76924f] rounded-full flex items-center justify-center flex-shrink-0">
                             <Check className="w-3 h-3 text-white" />
                           </div>
-                          <span className="flex-1 text-sm font-medium text-[#0a0a0a]">Share client testimonials and case studies</span>
-                          <div className="flex items-center gap-1">
+                          <span className="flex-1 text-sm font-medium text-[#0a0a0a] truncate">Share client testimonials and case studies</span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <Calendar className="w-4 h-4 text-[#737373]" />
-                            <span className="text-[13px] text-[#737373]">Jan 20</span>
+                            <span className="text-[13px] text-[#737373] whitespace-nowrap">7 days ago</span>
                           </div>
                         </div>
 
                         <div
-                          onClick={() => openTaskDetailModal({ id: 6, title: 'Discuss value proposition and service benefits', completed: true, date: 'Jan 22' })}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] shadow-sm bg-white hover:bg-[#f8f4f0] transition-colors cursor-pointer"
+                          onClick={() => openTaskDetailModal({ id: 6, title: 'Discuss value proposition and service benefits', completed: true, date: '5 days ago' })}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-[#e5e5e5] hover:bg-[#fcfaf8] transition-colors cursor-pointer"
                         >
                           <div className="w-4 h-4 bg-[#76924f] rounded-full flex items-center justify-center flex-shrink-0">
                             <Check className="w-3 h-3 text-white" />
                           </div>
-                          <span className="flex-1 text-sm font-medium text-[#0a0a0a]">Discuss value proposition and service benefits</span>
-                          <div className="flex items-center gap-1">
+                          <span className="flex-1 text-sm font-medium text-[#0a0a0a] truncate">Discuss value proposition and service benefits</span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <Calendar className="w-4 h-4 text-[#737373]" />
-                            <span className="text-[13px] text-[#737373]">Jan 22</span>
+                            <span className="text-[13px] text-[#737373] whitespace-nowrap">5 days ago</span>
                           </div>
                         </div>
 
                         <button
                           onClick={() => openAddTaskModal('Trust & value perception')}
-                          className="flex items-center gap-2 p-3 rounded-xl border border-[#e5e5e5] bg-white shadow-sm w-full hover:bg-[#fcfaf8] text-left"
+                          className="flex items-center gap-2 p-3 rounded-xl border border-[#e5e5e5] w-full hover:bg-[#fcfaf8] text-left"
                         >
                           <Plus className="w-4 h-4 text-[#737373]" />
                           <span className="text-sm font-medium text-[#737373]">New Risk task</span>

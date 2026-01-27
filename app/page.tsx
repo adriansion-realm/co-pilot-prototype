@@ -17,6 +17,11 @@ export default function Home() {
               Variant 2
             </Button>
           </Link>
+          <Link href="/variant-3">
+            <Button className="bg-[#0f4331] hover:bg-[#0a3426] text-white rounded-xl px-8 py-6 text-lg">
+              Variant 3
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

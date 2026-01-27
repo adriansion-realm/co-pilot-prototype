@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import TaskColumnV2 from './TaskColumnV2';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,6 +38,8 @@ const taskData = {
 };
 
 export default function TaskBoardV2() {
+  const [showCompleted, setShowCompleted] = useState(true);
+
   return (
     <div className="flex flex-col bg-white rounded-[20px] shadow-lg overflow-hidden h-full">
       {/* Top Bar */}
@@ -54,7 +57,11 @@ export default function TaskBoardV2() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Checkbox id="show-completed" defaultChecked />
+            <Checkbox
+              id="show-completed"
+              checked={showCompleted}
+              onCheckedChange={(checked) => setShowCompleted(checked as boolean)}
+            />
             <label htmlFor="show-completed" className="text-sm font-medium cursor-pointer">
               Show completed
             </label>
@@ -69,10 +76,10 @@ export default function TaskBoardV2() {
       {/* Task Columns */}
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex h-full gap-3 px-6 pt-6 pb-0">
-          <TaskColumnV2 title="Overdue" badgeColor="bg-[#cb2a57] text-white" count={taskData.overdue.length} tasks={taskData.overdue} />
-          <TaskColumnV2 title="Today" badgeColor="bg-[#76924f] text-white" count={taskData.today.length} tasks={taskData.today} />
-          <TaskColumnV2 title="Later" count={taskData.later.length} tasks={taskData.later} />
-          <TaskColumnV2 title="No tasks" count={taskData.noTasks.length} tasks={taskData.noTasks} />
+          <TaskColumnV2 title="Overdue" badgeColor="bg-[#cb2a57] text-white" count={taskData.overdue.length} tasks={taskData.overdue} showCompleted={showCompleted} />
+          <TaskColumnV2 title="Today" badgeColor="bg-[#76924f] text-white" count={taskData.today.length} tasks={taskData.today} showCompleted={showCompleted} />
+          <TaskColumnV2 title="Later" count={taskData.later.length} tasks={taskData.later} showCompleted={showCompleted} />
+          <TaskColumnV2 title="No tasks" count={taskData.noTasks.length} tasks={taskData.noTasks} showCompleted={showCompleted} />
         </div>
       </div>
     </div>

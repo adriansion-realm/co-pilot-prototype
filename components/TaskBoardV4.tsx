@@ -1,8 +1,10 @@
 "use client";
 
-import TaskColumn from './TaskColumn';
+import { useState } from 'react';
+import TaskColumnV4 from './TaskColumnV4';
 import { Button } from '@/components/ui/button';
-import { Plus, ListFilter } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, ListFilter, ChevronDown } from 'lucide-react';
 
 const taskData = {
   overdue: [
@@ -35,11 +37,13 @@ const taskData = {
   ],
 };
 
-export default function TaskBoard() {
+export default function TaskBoardV4() {
+  const [showCompleted, setShowCompleted] = useState(true);
+
   return (
     <div className="flex flex-col bg-white rounded-[20px] shadow-lg overflow-hidden h-full">
       {/* Top Bar */}
-      <header className="px-6 py-6 flex items-center border-b border-[#f5f5f5]">
+      <header className="px-6 py-6 flex items-center justify-between border-b border-[#f5f5f5]">
         <div className="flex items-center gap-4">
           <Button variant="secondary" className="gap-2 rounded-xl h-9 px-4">
             <Plus className="w-4 h-4" />
@@ -51,15 +55,31 @@ export default function TaskBoard() {
             <span>Add filter</span>
           </Button>
         </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="show-completed"
+              checked={showCompleted}
+              onCheckedChange={(checked) => setShowCompleted(checked as boolean)}
+            />
+            <label htmlFor="show-completed" className="text-sm font-medium cursor-pointer">
+              Show completed
+            </label>
+          </div>
+          <div className="flex items-center gap-3 px-3 py-1.5 border border-[#e5e5e5] rounded-xl h-9 bg-white shadow-sm cursor-pointer hover:bg-accent">
+            <span className="text-sm">last 7 days</span>
+            <ChevronDown className="w-4 h-4" />
+          </div>
+        </div>
       </header>
 
       {/* Task Columns */}
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex h-full gap-3 px-6 pt-6 pb-0">
-          <TaskColumn title="Overdue" badgeColor="bg-[#cb2a57] text-white" count={taskData.overdue.length} tasks={taskData.overdue} />
-          <TaskColumn title="Today" badgeColor="bg-[#76924f] text-white" count={taskData.today.length} tasks={taskData.today} />
-          <TaskColumn title="Later" count={taskData.later.length} tasks={taskData.later} />
-          <TaskColumn title="No tasks" count={taskData.noTasks.length} tasks={taskData.noTasks} />
+          <TaskColumnV4 title="Overdue" badgeColor="bg-[#cb2a57] text-white" count={taskData.overdue.length} tasks={taskData.overdue} showCompleted={showCompleted} />
+          <TaskColumnV4 title="Today" badgeColor="bg-[#76924f] text-white" count={taskData.today.length} tasks={taskData.today} showCompleted={showCompleted} />
+          <TaskColumnV4 title="Later" count={taskData.later.length} tasks={taskData.later} showCompleted={showCompleted} />
+          <TaskColumnV4 title="No tasks" count={taskData.noTasks.length} tasks={taskData.noTasks} showCompleted={showCompleted} />
         </div>
       </div>
     </div>

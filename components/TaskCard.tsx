@@ -1,6 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import { Calendar, DollarSign, Clock, Phone, PhoneOff, Heart } from 'lucide-react';
 import ProjectDrawer from './ProjectDrawer';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 interface Task {
   id: number;
@@ -34,7 +37,7 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
   };
 
   return (
-    <>
+    <TooltipProvider>
       <div
         className="bg-white rounded-[20px] border border-[#eeeff1] px-4 pt-3 pb-4 hover:bg-[#F8F4F0] transition-colors cursor-pointer"
         onClick={() => setDrawerOpen(true)}
@@ -45,25 +48,48 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
       {/* Card Footer - All chips in one row */}
       <div className="flex items-center gap-2">
         {/* 1. Estimated Close Date */}
-        <div className="flex items-center gap-1.5 border border-[#eeeff1] rounded-full px-2 py-2 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer">
-          <Calendar className="w-4 h-4 text-[#5e626e]" />
-          <span className="text-[13px] font-medium text-[#5e626e]">{task.date}</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-1.5 border border-[#eeeff1] rounded-full px-2 py-2 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer">
+              <Calendar className="w-4 h-4 text-[#5e626e]" />
+              <span className="text-[13px] font-medium text-[#5e626e]">{task.date}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Estimated Close Date</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* 2. Contract Value */}
-        <div className="flex items-center gap-1.5 border border-[#eeeff1] rounded-full px-2 py-2 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer">
-          <DollarSign className="w-4 h-4 text-[#5e626e]" />
-          <span className="text-[13px] font-medium text-[#5e626e]">{task.price}</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-1.5 border border-[#eeeff1] rounded-full px-2 py-2 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer">
+              <DollarSign className="w-4 h-4 text-[#5e626e]" />
+              <span className="text-[13px] font-medium text-[#5e626e]">{task.price}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Contract Value</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* 3. Last Contact */}
-        <div className="flex items-center gap-1.5 border border-[#eeeff1] rounded-full px-2 py-2 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer">
-          <Clock className="w-4 h-4 text-[#5e626e]" />
-          <span className="text-[13px] font-medium text-[#5e626e]">{task.timeAgo}</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-1.5 border border-[#eeeff1] rounded-full px-2 py-2 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer">
+              <Clock className="w-4 h-4 text-[#5e626e]" />
+              <span className="text-[13px] font-medium text-[#5e626e]">{task.timeAgo}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Last contact</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* 4. Upcoming Call (Icon Only) */}
-        <div className={`flex items-center justify-center border rounded-full w-8 h-8 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer ${task.hasCall ? 'border-[#eeeff1]' : 'border-[#fecaca]'}`}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={`flex items-center justify-center border rounded-full w-8 h-8 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer ${task.hasCall ? 'border-[#eeeff1]' : 'border-[#fecaca]'}`}>
           {task.hasCall ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
               <g clipPath="url(#clip0_1062_12854)">
@@ -80,12 +106,24 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
           ) : (
             <PhoneOff className="w-4 h-4 text-[#cb2a57]" />
           )}
-        </div>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{task.hasCall ? 'Mar 15, 2025 10:00AM' : 'No upcoming call scheduled'}</p>
+          </TooltipContent>
+        </Tooltip>
 
         {/* 5. Project Health */}
-        <div className={`flex items-center justify-center border rounded-full w-8 h-8 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer ${getHealthColor()}`}>
-          <Heart className="w-4 h-4 fill-current" />
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={`flex items-center justify-center border rounded-full w-8 h-8 hover:bg-[#FCFAF8] active:bg-[#F8F4F0] transition-colors cursor-pointer ${getHealthColor()}`}>
+              <Heart className="w-4 h-4 fill-current" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Health {getHealthScore()}/100</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
 
@@ -104,6 +142,6 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
           hasCall: task.hasCall,
         }}
       />
-    </>
+    </TooltipProvider>
   );
 }

@@ -24,7 +24,7 @@ interface TaskCardProps {
   showCompleted: boolean;
 }
 
-export default function TaskCardV2({ task, columnName, taskCount, showCompleted }: TaskCardProps) {
+export default function TaskCardV3({ task, columnName, taskCount, showCompleted }: TaskCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);

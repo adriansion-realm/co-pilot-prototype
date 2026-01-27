@@ -1,8 +1,8 @@
-import TaskBoard from '@/components/TaskBoard';
+import TaskBoardV4 from '@/components/TaskBoardV4';
 import { Button } from '@/components/ui/button';
 import { Sparkles, LayoutGrid, Settings, Bell } from 'lucide-react';
 
-export default function Variant2() {
+export default function Variant4() {
   return (
     <div className="flex h-screen" style={{ background: '#FCFAF8' }}>
       {/* Left Sidebar */}
@@ -44,7 +44,7 @@ export default function Variant2() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-hidden p-2">
-        <TaskBoard />
+        <TaskBoardV4 />
       </main>
 
       {/* Right Sidebar */}

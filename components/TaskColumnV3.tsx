@@ -1,4 +1,4 @@
-import TaskCardV2 from './TaskCardV2';
+import TaskCardV3 from './TaskCardV3';
 
 interface Task {
   id: number;
@@ -18,7 +18,7 @@ interface TaskColumnProps {
   showCompleted: boolean;
 }
 
-export default function TaskColumnV2({ title, badgeColor, count, tasks, showCompleted }: TaskColumnProps) {
+export default function TaskColumnV3({ title, badgeColor, count, tasks, showCompleted }: TaskColumnProps) {
   const getBadgeStyles = () => {
     if (title === 'Overdue') return 'bg-[#cb2a57] text-white';
     if (title === 'Today') return 'bg-[#76924f] text-white';
@@ -39,7 +39,7 @@ export default function TaskColumnV2({ title, badgeColor, count, tasks, showComp
         {/* Task Cards */}
         <div className="flex flex-col gap-2 overflow-y-auto">
           {tasks.map((task) => (
-            <TaskCardV2 key={task.id} task={task} columnName={title} taskCount={count} showCompleted={showCompleted} />
+            <TaskCardV3 key={task.id} task={task} columnName={title} taskCount={count} showCompleted={showCompleted} />
           ))}
         </div>
       </div>
