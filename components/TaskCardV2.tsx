@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, DollarSign, Clock, PhoneOff, Heart, ChevronDown, ChevronRight, Check, Plus } from 'lucide-react';
+import { Calendar, DollarSign, Clock, PhoneOff, Heart, ChevronDown, ChevronRight, Check, Plus, Search } from 'lucide-react';
 import ProjectDrawer from './ProjectDrawer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface Task {
   id: number;
@@ -23,6 +25,17 @@ interface TaskCardProps {
 export default function TaskCardV2({ task, columnName, taskCount }: TaskCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
+  const [taskDetailModalOpen, setTaskDetailModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [taskFormData, setTaskFormData] = useState({
+    opportunity: '',
+    owner: 'Ben Moody',
+    risk: 'No risks',
+    title: '',
+    dueDate: '',
+    reasoning: ''
+  });
 
   const getHealthColor = () => {
     if (task.health === 'good') return 'text-[#76924f] border-[#d9eab8]';
@@ -34,6 +47,23 @@ export default function TaskCardV2({ task, columnName, taskCount }: TaskCardProp
     if (task.health === 'good') return 85;
     if (task.health === 'medium') return 65;
     return 40;
+  };
+
+  const openAddTaskModal = () => {
+    setTaskFormData({
+      opportunity: task.title,
+      owner: 'Ben Moody',
+      risk: 'No risks',
+      title: '',
+      dueDate: '',
+      reasoning: ''
+    });
+    setAddTaskModalOpen(true);
+  };
+
+  const openTaskDetailModal = (taskItem: any) => {
+    setSelectedTask(taskItem);
+    setTaskDetailModalOpen(true);
   };
 
   // Sample tasks - different sets based on project title
@@ -140,6 +170,7 @@ export default function TaskCardV2({ task, columnName, taskCount }: TaskCardProp
             {tasks.map((taskItem) => (
               <div
                 key={taskItem.id}
+                onClick={() => openTaskDetailModal(taskItem)}
                 className="bg-white border border-[#e5e5e5] flex gap-3 items-center p-4 rounded-xl shadow-sm hover:bg-[#f8f4f0] transition-colors cursor-pointer"
               >
                 {taskItem.completed ? (
@@ -158,13 +189,239 @@ export default function TaskCardV2({ task, columnName, taskCount }: TaskCardProp
             ))}
 
             {/* Add task button */}
-            <div className="bg-white border border-[#e5e5e5] flex gap-3 items-center p-4 rounded-xl shadow-sm hover:bg-[#fcfaf8] transition-colors cursor-pointer">
+            <div
+              onClick={openAddTaskModal}
+              className="bg-white border border-[#e5e5e5] flex gap-3 items-center p-4 rounded-xl shadow-sm hover:bg-[#fcfaf8] transition-colors cursor-pointer"
+            >
               <Plus className="w-4 h-4 text-[#737373]" />
               <p className="flex-1 text-sm font-medium text-[#737373]">Add task</p>
             </div>
           </div>
         )}
       </div>
+
+      {/* Add Task Modal */}
+      <Dialog open={addTaskModalOpen} onOpenChange={setAddTaskModalOpen}>
+        <DialogContent className="max-w-[672px] max-h-[768px] sm:max-h-[80vh] p-0 flex flex-col">
+          {/* Fixed Header */}
+          <div className="p-6 pb-0 bg-white">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold text-[#0a0a0a]">Add task</DialogTitle>
+            </DialogHeader>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="overflow-y-auto px-6 py-6">
+            <div className="space-y-4">
+              {/* Select Opportunity */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#0a0a0a]">
+                  Select Opportunity<span className="text-[#dc2626]">*</span>
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373]" />
+                  <input
+                    type="text"
+                    value={taskFormData.opportunity}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, opportunity: e.target.value })}
+                    placeholder="Search and select opportunity..."
+                    className="w-full pl-10 pr-3 py-2 border border-[#e5e5e5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4331] focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Owner */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#0a0a0a]">
+                  Owner<span className="text-[#dc2626]">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={taskFormData.owner}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, owner: e.target.value })}
+                    className="w-full px-3 py-2 border border-[#e5e5e5] rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#0f4331] focus:border-transparent"
+                  >
+                    <option>Ben Moody</option>
+                    <option>Other User</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373] pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Risks */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#0a0a0a]">Risks</label>
+                <div className="relative">
+                  <select
+                    value={taskFormData.risk}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, risk: e.target.value })}
+                    className="w-full px-3 py-2 border border-[#e5e5e5] rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#0f4331] focus:border-transparent"
+                  >
+                    <option>No risks</option>
+                    <option>Stage</option>
+                    <option>Decision readiness</option>
+                    <option>Financial readiness</option>
+                    <option>Stakeholder alignment</option>
+                    <option>Advisor-led momentum</option>
+                    <option>Homeowner engagement</option>
+                    <option>Trust & value perception</option>
+                    <option>External constraints</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373] pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Task title */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#0a0a0a]">
+                  Task title<span className="text-[#dc2626]">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={taskFormData.title}
+                  onChange={(e) => setTaskFormData({ ...taskFormData, title: e.target.value })}
+                  placeholder="Enter task title"
+                  className="w-full px-3 py-2 border border-[#e5e5e5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4331] focus:border-transparent"
+                />
+              </div>
+
+              {/* Due date */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#0a0a0a]">
+                  Due date<span className="text-[#dc2626]">*</span>
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373]" />
+                  <input
+                    type="date"
+                    value={taskFormData.dueDate}
+                    onChange={(e) => setTaskFormData({ ...taskFormData, dueDate: e.target.value })}
+                    placeholder="Pick a due date"
+                    className="w-full pl-10 pr-3 py-2 border border-[#e5e5e5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0f4331] focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Reasoning */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#0a0a0a]">Reasoning</label>
+                <textarea
+                  value={taskFormData.reasoning}
+                  onChange={(e) => setTaskFormData({ ...taskFormData, reasoning: e.target.value })}
+                  placeholder="Explain the reasoning behind the task..."
+                  rows={4}
+                  maxLength={500}
+                  className="w-full px-3 py-2 border border-[#e5e5e5] rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#0f4331] focus:border-transparent"
+                />
+                <p className="text-xs text-[#737373]">{taskFormData.reasoning.length}/500 characters</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Fixed Footer */}
+          <div className="p-6 pt-0 bg-white">
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setAddTaskModalOpen(false)}
+                className="flex-1 bg-white border border-[#e5e5e5] text-[#0a0a0a] hover:bg-[#fcfaf8] rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  // Handle task creation
+                  setAddTaskModalOpen(false);
+                }}
+                className="flex-1 bg-[#0f4331] hover:bg-[#0a3426] text-white rounded-xl"
+              >
+                Add task
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Task Detail Modal */}
+      <Dialog open={taskDetailModalOpen} onOpenChange={setTaskDetailModalOpen}>
+        <DialogContent className="max-w-[672px] max-h-[768px] sm:max-h-[80vh] p-0 flex flex-col">
+          {/* Fixed Header */}
+          <div className="p-6 pb-0 bg-white">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold text-[#0a0a0a]">
+                {selectedTask?.title || 'Task Details'}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+
+          {/* Scrollable Content - Skeleton Placeholders */}
+          <div className="overflow-y-auto px-6 py-6">
+            <div className="space-y-6">
+              {/* Skeleton: Large text block */}
+              <div className="space-y-3">
+                <div className="h-4 bg-[#f8f4f0] rounded w-3/4"></div>
+                <div className="h-4 bg-[#f8f4f0] rounded w-full"></div>
+                <div className="h-4 bg-[#f8f4f0] rounded w-5/6"></div>
+              </div>
+
+              {/* Skeleton: Info boxes */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-20 bg-[#f8f4f0] rounded-xl"></div>
+                <div className="h-20 bg-[#f8f4f0] rounded-xl"></div>
+              </div>
+
+              {/* Skeleton: Medium text block */}
+              <div className="space-y-2">
+                <div className="h-3 bg-[#f8f4f0] rounded w-1/4"></div>
+                <div className="h-16 bg-[#f8f4f0] rounded-xl w-full"></div>
+              </div>
+
+              {/* Skeleton: List items */}
+              <div className="space-y-3">
+                <div className="h-12 bg-[#f8f4f0] rounded-xl"></div>
+                <div className="h-12 bg-[#f8f4f0] rounded-xl"></div>
+                <div className="h-12 bg-[#f8f4f0] rounded-xl"></div>
+              </div>
+
+              {/* Skeleton: Additional content block */}
+              <div className="space-y-2">
+                <div className="h-4 bg-[#f8f4f0] rounded w-2/3"></div>
+                <div className="h-4 bg-[#f8f4f0] rounded w-full"></div>
+                <div className="h-4 bg-[#f8f4f0] rounded w-4/5"></div>
+              </div>
+
+              {/* Skeleton: Small info cards */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="h-16 bg-[#f8f4f0] rounded-xl"></div>
+                <div className="h-16 bg-[#f8f4f0] rounded-xl"></div>
+                <div className="h-16 bg-[#f8f4f0] rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Fixed Footer */}
+          <div className="p-6 pt-0 bg-white">
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setTaskDetailModalOpen(false)}
+                className="flex-1 bg-white border border-[#e5e5e5] text-[#0a0a0a] hover:bg-[#fcfaf8] rounded-xl"
+              >
+                Skip
+              </Button>
+              <Button
+                onClick={() => {
+                  // Handle task completion
+                  setTaskDetailModalOpen(false);
+                }}
+                className="flex-1 bg-[#0f4331] hover:bg-[#0a3426] text-white rounded-xl"
+              >
+                Complete
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <ProjectDrawer
         open={drawerOpen}
