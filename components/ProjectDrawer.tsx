@@ -46,11 +46,12 @@ interface ProjectDrawerProps {
     lastMeeting: string;
     hasCall: boolean;
   };
+  defaultTab?: 'projectInfo' | 'tasks' | 'status' | 'risks';
 }
 
-export default function ProjectDrawer({ open, onOpenChange, columnName, taskCount, project }: ProjectDrawerProps) {
+export default function ProjectDrawer({ open, onOpenChange, columnName, taskCount, project, defaultTab = 'tasks' }: ProjectDrawerProps) {
   const [showCompleted, setShowCompleted] = useState(true);
-  const [activeTab, setActiveTab] = useState<'projectInfo' | 'tasks' | 'status' | 'risks'>('tasks');
+  const [activeTab, setActiveTab] = useState<'projectInfo' | 'tasks' | 'status' | 'risks'>(defaultTab);
   const [statusSummary, setStatusSummary] = useState(
     `• Nedu and Kishaya completed a detailed project planning call on January 14, 2026, clarifying scope, priorities, and budget constraints; the main blocker is aligning the project scope with Nedu's $100K target budget, as initial estimates were significantly higher.
 
@@ -120,6 +121,13 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
     // Initial height adjustment on mount
     adjustTextareaHeight();
   }, []);
+
+  useEffect(() => {
+    // Reset to default tab when drawer opens
+    if (open) {
+      setActiveTab(defaultTab);
+    }
+  }, [open, defaultTab]);
 
   useEffect(() => {
     // Update indicator position when active tab changes or drawer opens
@@ -222,7 +230,7 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
             <div className="relative border-b border-[#e5e5e5]">
               <div className="flex items-center gap-6">
                 <button
-                  ref={(el) => (tabRefs.current['projectInfo'] = el)}
+                  ref={(el) => { tabRefs.current['projectInfo'] = el; }}
                   onClick={() => setActiveTab('projectInfo')}
                   className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'projectInfo' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
                 >
@@ -230,7 +238,7 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                   <span className="text-sm font-medium">Project info</span>
                 </button>
                 <button
-                  ref={(el) => (tabRefs.current['tasks'] = el)}
+                  ref={(el) => { tabRefs.current['tasks'] = el; }}
                   onClick={() => setActiveTab('tasks')}
                   className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'tasks' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
                 >
@@ -241,7 +249,7 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                   </div>
                 </button>
                 <button
-                  ref={(el) => (tabRefs.current['status'] = el)}
+                  ref={(el) => { tabRefs.current['status'] = el; }}
                   onClick={() => setActiveTab('status')}
                   className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'status' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
                 >
@@ -249,7 +257,7 @@ export default function ProjectDrawer({ open, onOpenChange, columnName, taskCoun
                   <span className="text-sm font-medium">Status</span>
                 </button>
                 <button
-                  ref={(el) => (tabRefs.current['risks'] = el)}
+                  ref={(el) => { tabRefs.current['risks'] = el; }}
                   onClick={() => setActiveTab('risks')}
                   className={`flex items-center justify-center gap-2 px-1 py-3 transition-colors ${activeTab === 'risks' ? 'text-[#0a0a0a]' : 'text-[#737373]'}`}
                 >
