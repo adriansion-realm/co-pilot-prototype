@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Calendar, DollarSign, Clock, PhoneOff, Heart, ChevronDown, ChevronRight, Check, Plus, Search, PanelRight } from 'lucide-react';
 import ProjectDrawer from './ProjectDrawer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -25,6 +26,7 @@ interface TaskCardProps {
 }
 
 export default function TaskCardV3({ task, columnName, taskCount, showCompleted }: TaskCardProps) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
@@ -129,7 +131,7 @@ export default function TaskCardV3({ task, columnName, taskCount, showCompleted 
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDrawerOpen(true);
+                  router.push(`/variant-2/opportunity/${task.id}`);
                 }}
                 className="bg-white border border-[#e5e5e5] flex gap-2 h-8 items-center justify-center px-3 py-2 rounded-xl shadow-sm shrink-0 hover:bg-[#fcfaf8] transition-colors"
               >
