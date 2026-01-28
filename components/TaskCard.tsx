@@ -1,7 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Calendar, DollarSign, Clock, Phone, PhoneOff, Heart } from 'lucide-react';
+import ProjectDrawer from './ProjectDrawer';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 interface Task {
@@ -21,7 +22,7 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, columnName, taskCount }: TaskCardProps) {
-  const router = useRouter();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const getHealthColor = () => {
     if (task.health === 'good') return 'text-[#76924f] border-[#d9eab8]';
@@ -39,7 +40,7 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
     <TooltipProvider>
       <div
         className="bg-white rounded-[20px] border border-[#eeeff1] px-4 pt-3 pb-4 hover:bg-[#F8F4F0] transition-colors cursor-pointer"
-        onClick={() => router.push(`/variant-2/opportunity/${task.id}`)}
+        onClick={() => setDrawerOpen(true)}
       >
       {/* Title */}
       <h3 className="text-base font-medium text-black mb-2 leading-8">{task.title}</h3>
@@ -125,6 +126,23 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
         </Tooltip>
       </div>
     </div>
+
+      <ProjectDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        columnName={columnName}
+        taskCount={taskCount}
+        project={{
+          title: task.title,
+          status: 'Open',
+          health: getHealthScore(),
+          estimatedClose: task.date + ', 2026',
+          contractValue: task.price,
+          lastMeeting: 'Oct 2, 2025',
+          hasCall: task.hasCall,
+        }}
+        defaultTab="tasks"
+      />
     </TooltipProvider>
   );
 }
