@@ -41,7 +41,7 @@ export default function TaskCard({ task, columnName, taskCount, variant = 'drawe
 
   const handleCardClick = () => {
     if (variant === 'fullpage') {
-      router.push(`/variant-2/opportunity/${task.id}`);
+      router.push(`/variant-full-page/opportunity/${task.id}`);
     } else {
       setDrawerOpen(true);
     }
