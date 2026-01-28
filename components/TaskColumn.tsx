@@ -15,9 +15,10 @@ interface TaskColumnProps {
   badgeColor?: string;
   count: number;
   tasks: Task[];
+  variant?: 'drawer' | 'fullpage';
 }
 
-export default function TaskColumn({ title, badgeColor, count, tasks }: TaskColumnProps) {
+export default function TaskColumn({ title, badgeColor, count, tasks, variant = 'drawer' }: TaskColumnProps) {
   const getBadgeStyles = () => {
     if (title === 'Overdue') return 'bg-[#cb2a57] text-white';
     if (title === 'Today') return 'bg-[#76924f] text-white';
@@ -38,7 +39,7 @@ export default function TaskColumn({ title, badgeColor, count, tasks }: TaskColu
         {/* Task Cards */}
         <div className="flex flex-col gap-2 overflow-y-auto">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} columnName={title} taskCount={count} />
+            <TaskCard key={task.id} task={task} columnName={title} taskCount={count} variant={variant} />
           ))}
         </div>
       </div>

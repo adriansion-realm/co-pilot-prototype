@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Calendar, DollarSign, Clock, Phone, PhoneOff, Heart } from 'lucide-react';
 import ProjectDrawer from './ProjectDrawer';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -19,9 +20,11 @@ interface TaskCardProps {
   task: Task;
   columnName: string;
   taskCount: number;
+  variant?: 'drawer' | 'fullpage';
 }
 
-export default function TaskCard({ task, columnName, taskCount }: TaskCardProps) {
+export default function TaskCard({ task, columnName, taskCount, variant = 'drawer' }: TaskCardProps) {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const getHealthColor = () => {
@@ -36,11 +39,19 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
     return 40;
   };
 
+  const handleCardClick = () => {
+    if (variant === 'fullpage') {
+      router.push(`/variant-2/opportunity/${task.id}`);
+    } else {
+      setDrawerOpen(true);
+    }
+  };
+
   return (
     <TooltipProvider>
       <div
         className="bg-white rounded-[20px] border border-[#eeeff1] px-4 pt-3 pb-4 hover:bg-[#F8F4F0] transition-colors cursor-pointer"
-        onClick={() => setDrawerOpen(true)}
+        onClick={handleCardClick}
       >
       {/* Title */}
       <h3 className="text-base font-medium text-black mb-2 leading-8">{task.title}</h3>
@@ -127,22 +138,24 @@ export default function TaskCard({ task, columnName, taskCount }: TaskCardProps)
       </div>
     </div>
 
-      <ProjectDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        columnName={columnName}
-        taskCount={taskCount}
-        project={{
-          title: task.title,
-          status: 'Open',
-          health: getHealthScore(),
-          estimatedClose: task.date + ', 2026',
-          contractValue: task.price,
-          lastMeeting: 'Oct 2, 2025',
-          hasCall: task.hasCall,
-        }}
-        defaultTab="tasks"
-      />
+      {variant === 'drawer' && (
+        <ProjectDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          columnName={columnName}
+          taskCount={taskCount}
+          project={{
+            title: task.title,
+            status: 'Open',
+            health: getHealthScore(),
+            estimatedClose: task.date + ', 2026',
+            contractValue: task.price,
+            lastMeeting: 'Oct 2, 2025',
+            hasCall: task.hasCall,
+          }}
+          defaultTab="tasks"
+        />
+      )}
     </TooltipProvider>
   );
 }

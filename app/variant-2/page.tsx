@@ -46,7 +46,7 @@ export default function Variant2() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-hidden p-2">
-        <TaskBoard />
+        <TaskBoard variant="fullpage" />
       </main>
 
       {/* Right Sidebar */}
